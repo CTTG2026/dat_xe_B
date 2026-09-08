@@ -61,6 +61,18 @@
     white-space:nowrap;
   }
   .plate svg{width:18px;height:18px;flex:none;}
+  .plate-select{
+    background:transparent;
+    border:1px solid rgba(255,255,255,0.55);
+    color:#fff;
+    font-weight:700;
+    font-size:0.95rem;
+    font-family:inherit;
+    padding:3px 6px;
+    border-radius:6px;
+    cursor:pointer;
+  }
+  .plate-select option{ color:#1A2233; }
   .controls label{
     font-size:0.85rem;
     font-weight:600;
@@ -296,7 +308,8 @@
     <div class="left-group">
       <span class="plate">
         <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M5 11l1.5-4.5A2 2 0 0 1 8.4 5h7.2a2 2 0 0 1 1.9 1.5L19 11" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><rect x="3" y="11" width="18" height="6" rx="1.5" stroke="white" stroke-width="1.8"/><circle cx="7.5" cy="17" r="1.4" fill="white"/><circle cx="16.5" cy="17" r="1.4" fill="white"/></svg>
-        BIỂN SỐ XE: <span id="plateNumber">63A20430</span>
+        BIỂN SỐ XE:
+        <select id="xeSelect" class="plate-select"></select>
       </span>
       <button class="btn-add" id="openModalBtn">+ Đăng ký đặt xe</button>
     </div>
@@ -318,7 +331,7 @@
 
   <div class="overlay" id="overlay">
     <div class="modal">
-      <h3>Đăng ký đặt xe</h3>
+      <h3 id="modalTitle">Đăng ký đặt xe</h3>
       <div id="formMsg" class="msg"></div>
       <form id="bookingForm">
         <div>
@@ -354,14 +367,25 @@
 <script>
   // ĐIỀN URL WEB APP APPS SCRIPT CỦA BẠN VÀO ĐÂY SAU KHI DEPLOY
   const API_URL = 'https://script.google.com/macros/s/AKfycbyLZaNu3I7RpVRU6oX5SpyOPsKWMsWcO5R-TnA9nknMkWSAYMnyaJbu4bASbkaOfzO7/exec';
-  // Đổi biển số xe hiển thị ở đây nếu cần
-  const BIEN_SO_XE = '63A20430';
+  // Danh sách xe: thêm biển số xe mới vào đây là web tự nhận (xem hướng dẫn trong Code.gs
+  // để tạo tab tương ứng trong Google Sheet cho mỗi biển số)
+  const XE_LIST = ['63A20430', '63A20469'];
+  let currentXe = XE_LIST[0];
 
   const DAY_START_MIN = 6*60;   // 06:00
   const DAY_END_MIN   = 22*60;  // 22:00
   const SLOT_MIN = 15;
 
-  document.getElementById('plateNumber').textContent = BIEN_SO_XE;
+  const xeSelect = document.getElementById('xeSelect');
+  function populateXeSelect(){
+    xeSelect.innerHTML = XE_LIST.map(x => `<option value="${x}">${x}</option>`).join('');
+    xeSelect.value = currentXe;
+  }
+  xeSelect.addEventListener('change', () => {
+    currentXe = xeSelect.value;
+    loadBookings();
+  });
+  populateXeSelect();
 
   const monthSelect = document.getElementById('monthSelect');
   const gridEl = document.getElementById('grid');
@@ -525,7 +549,7 @@
 
   async function loadBookings(){
     try{
-      const res = await fetch(API_URL);
+      const res = await fetch(`${API_URL}?xe=${encodeURIComponent(currentXe)}`);
       const json = await res.json();
       if(!json.ok) throw new Error(json.error || 'Lỗi tải dữ liệu');
       allBookings = json.data;
@@ -556,7 +580,7 @@
       const res = await fetch(API_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify({ action: 'delete', id: id, password: adminPassword })
+        body: JSON.stringify({ action: 'delete', id: id, password: adminPassword, xe: currentXe })
       });
       const json = await res.json();
       if(!json.ok){
@@ -613,6 +637,7 @@
 
   function openModal(){
     overlay.classList.add('open');
+    document.getElementById('modalTitle').textContent = `Đăng ký đặt xe ${currentXe}`;
     formMsg.className = 'msg';
     formMsg.style.display = 'none';
     form.reset();
@@ -638,7 +663,8 @@
       ngay: document.getElementById('ngay').value,
       gioBatDau: document.getElementById('gioBatDau').value,
       gioKetThuc: document.getElementById('gioKetThuc').value,
-      ghiChu: document.getElementById('ghiChu').value.trim()
+      ghiChu: document.getElementById('ghiChu').value.trim(),
+      xe: currentXe
     };
 
     try{
