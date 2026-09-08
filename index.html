@@ -329,6 +329,57 @@
     font-weight:600;
   }
   body.admin-mode .legend .admin-hint{ display:inline; }
+
+  .success-modal{
+    text-align:center;
+    max-width:380px;
+  }
+  .success-icon{
+    width:52px;
+    height:52px;
+    line-height:52px;
+    border-radius:50%;
+    background:#EAF3EC;
+    color:#3F7D58;
+    font-size:1.6rem;
+    font-weight:700;
+    margin:0 auto 14px;
+  }
+  .success-modal h3{
+    text-align:center;
+    margin-bottom:18px;
+  }
+  .success-details{
+    text-align:left;
+    background:#F7F8FA;
+    border-radius:10px;
+    padding:6px 16px;
+    margin-bottom:18px;
+  }
+  .success-row{
+    display:flex;
+    justify-content:space-between;
+    gap:12px;
+    padding:10px 0;
+    border-bottom:1px solid var(--border);
+    font-size:0.9rem;
+  }
+  .success-row:last-child{ border-bottom:none; }
+  .success-label{ color:var(--ink-soft); font-weight:500; }
+  .success-row span:last-child{ font-weight:700; text-align:right; }
+  .btn-ok{
+    width:100%;
+    padding:12px;
+    border-radius:8px;
+    border:none;
+    background:var(--add-btn);
+    color:#fff;
+    font-size:0.95rem;
+    font-weight:700;
+    font-family:inherit;
+    cursor:pointer;
+  }
+  .btn-ok:hover{ background:var(--add-btn-dark); }
 </style>
 </head>
 <body>
@@ -393,6 +444,20 @@
           <button type="submit" class="btn-submit" id="submitBtn">Đặt xe</button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <div class="overlay" id="successOverlay">
+    <div class="modal success-modal">
+      <div class="success-icon">✓</div>
+      <h3>Đã đặt xe thành công</h3>
+      <div class="success-details">
+        <div class="success-row"><span class="success-label">Biển số xe</span><span id="successPlate"></span></div>
+        <div class="success-row"><span class="success-label">Ngày đặt</span><span id="successDate"></span></div>
+        <div class="success-row"><span class="success-label">Thời gian</span><span id="successTime"></span></div>
+        <div class="success-row"><span class="success-label">Người đặt</span><span id="successName"></span></div>
+      </div>
+      <button type="button" class="btn-ok" id="successOkBtn">OK</button>
     </div>
   </div>
 
@@ -674,6 +739,28 @@
     const d = new Date();
     return d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate());
   }
+  function ngayToVN(ngayStr){
+    const [y,m,d] = ngayStr.split('-');
+    return `${d}/${m}/${y}`;
+  }
+
+  const successOverlay = document.getElementById('successOverlay');
+  const successOkBtn = document.getElementById('successOkBtn');
+  function openSuccessDialog(payload){
+    const car = XE_LIST.find(c => c.plate === currentXe);
+    document.getElementById('successPlate').textContent = car ? car.label : currentXe;
+    document.getElementById('successDate').textContent = ngayToVN(payload.ngay);
+    document.getElementById('successTime').textContent = `${minToDisplayLabel(toMin(payload.gioBatDau))} - ${minToDisplayLabel(toMin(payload.gioKetThuc))}`;
+    document.getElementById('successName').textContent = payload.nguoiDat;
+    successOverlay.classList.add('open');
+  }
+  function toMin(hhmm){
+    const [h,m] = hhmm.split(':').map(Number);
+    return h*60+m;
+  }
+  successOkBtn.addEventListener('click', () => {
+    successOverlay.classList.remove('open');
+  });
 
   // Nếu ngày chọn là hôm nay, ẩn các khung giờ đã qua (chỉ cho đặt từ giờ hiện tại trở đi)
   function computeCutoffMin(ngayStr){
@@ -760,10 +847,9 @@
         formMsg.textContent = json.error;
         formMsg.className = 'msg error';
       } else {
-        formMsg.textContent = 'Đặt xe thành công!';
-        formMsg.className = 'msg success';
+        closeModal();
+        openSuccessDialog(payload);
         await loadBookings();
-        setTimeout(closeModal, 900);
       }
     }catch(err){
       formMsg.textContent = 'Có lỗi khi gửi yêu cầu: ' + err.message;
