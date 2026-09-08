@@ -16,8 +16,8 @@
     --badge-dark:#3B4BC0;
     --add-btn:#2E9E5B;
     --add-btn-dark:#25824A;
-    --border:#E3E5E9;
-    --grid-line:#EDEEF2;
+    --border:#C4C8D0;
+    --grid-line:#D6D9DE;
     --booked-bg:#FDE68A;
     --booked-bg-hover:#FCD34D;
     --booked-text:#8A5A00;
@@ -160,7 +160,7 @@
     text-align:right;
   }
   tbody tr:nth-child(4n+1) td, tbody tr:nth-child(4n+1) th{
-    border-top:1px solid var(--border);
+    border-top:1.5px solid #9AA0AC;
   }
   td.slot{cursor:default;}
   td.slot.booked{
@@ -405,10 +405,10 @@
 
   function daysInMonth(y,m){ return new Date(y, m, 0).getDate(); }
 
-  // Chỉ hiện các ngày từ (hôm nay - 3 ngày) trở đi; ngày cũ hơn sẽ bị ẩn khỏi lưới
+  // Chỉ hiện các ngày từ (hôm nay - 1 ngày) trở đi; ngày cũ hơn sẽ bị ẩn khỏi lưới
   function getCutoffDate(){
     const now = new Date();
-    return new Date(now.getFullYear(), now.getMonth(), now.getDate() - 3);
+    return new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
   }
   function getVisibleDays(y, m){
     const nDays = daysInMonth(y, m);
