@@ -47,7 +47,8 @@
     gap:10px;
     flex-wrap:wrap;
   }
-  .plate{
+  .xe-dropdown{ position:relative; }
+  .plate-toggle{
     display:inline-flex;
     align-items:center;
     gap:8px;
@@ -57,22 +58,44 @@
     font-size:0.95rem;
     padding:9px 16px;
     border-radius:999px;
-    letter-spacing:0.01em;
+    border:none;
+    cursor:pointer;
+    font-family:inherit;
     white-space:nowrap;
   }
-  .plate svg{width:18px;height:18px;flex:none;}
-  .plate-select{
-    background:transparent;
-    border:1px solid rgba(255,255,255,0.55);
+  .plate-toggle:hover{ background:var(--badge-dark); }
+  .plate-toggle .caret{ font-size:0.75rem; opacity:0.85; }
+  .xe-dropdown-menu{
+    display:none;
+    position:absolute;
+    top:calc(100% + 6px);
+    left:0;
+    background:#fff;
+    border:1px solid var(--border);
+    border-radius:12px;
+    box-shadow:0 10px 28px rgba(20,24,34,0.18);
+    padding:6px;
+    min-width:220px;
+    z-index:40;
+  }
+  .xe-dropdown-menu.open{ display:block; }
+  .xe-dropdown-menu .car-option{
+    display:block;
+    width:100%;
+    text-align:left;
     color:#fff;
     font-weight:700;
-    font-size:0.95rem;
-    font-family:inherit;
-    padding:3px 6px;
-    border-radius:6px;
+    font-size:0.88rem;
+    padding:10px 12px;
+    border-radius:8px;
+    border:none;
     cursor:pointer;
+    font-family:inherit;
+    margin-bottom:5px;
   }
-  .plate-select option{ color:#1A2233; }
+  .xe-dropdown-menu .car-option:last-child{ margin-bottom:0; }
+  .xe-dropdown-menu .car-option.active{ box-shadow:0 0 0 2px #1A2233 inset; }
+  .xe-dropdown-menu .car-option:hover{ filter:brightness(0.92); }
   .controls label{
     font-size:0.85rem;
     font-weight:600;
@@ -306,11 +329,13 @@
 
   <div class="topbar">
     <div class="left-group">
-      <span class="plate">
-        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M5 11l1.5-4.5A2 2 0 0 1 8.4 5h7.2a2 2 0 0 1 1.9 1.5L19 11" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><rect x="3" y="11" width="18" height="6" rx="1.5" stroke="white" stroke-width="1.8"/><circle cx="7.5" cy="17" r="1.4" fill="white"/><circle cx="16.5" cy="17" r="1.4" fill="white"/></svg>
-        BIỂN SỐ XE:
-        <select id="xeSelect" class="plate-select"></select>
-      </span>
+      <div class="xe-dropdown">
+        <button type="button" class="plate-toggle" id="xeDropdownBtn">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M5 11l1.5-4.5A2 2 0 0 1 8.4 5h7.2a2 2 0 0 1 1.9 1.5L19 11" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><rect x="3" y="11" width="18" height="6" rx="1.5" stroke="white" stroke-width="1.8"/><circle cx="7.5" cy="17" r="1.4" fill="white"/><circle cx="16.5" cy="17" r="1.4" fill="white"/></svg>
+          BIỂN SỐ XE <span class="caret">▾</span>
+        </button>
+        <div class="xe-dropdown-menu" id="xeDropdownMenu"></div>
+      </div>
       <button class="btn-add" id="openModalBtn">+ Đăng ký đặt xe</button>
     </div>
     <div class="right-group">
@@ -367,25 +392,44 @@
 <script>
   // ĐIỀN URL WEB APP APPS SCRIPT CỦA BẠN VÀO ĐÂY SAU KHI DEPLOY
   const API_URL = 'https://script.google.com/macros/s/AKfycbyLZaNu3I7RpVRU6oX5SpyOPsKWMsWcO5R-TnA9nknMkWSAYMnyaJbu4bASbkaOfzO7/exec';
-  // Danh sách xe: thêm biển số xe mới vào đây là web tự nhận (xem hướng dẫn trong Code.gs
-  // để tạo tab tương ứng trong Google Sheet cho mỗi biển số)
-  const XE_LIST = ['63A20430', '63A20469'];
-  let currentXe = XE_LIST[0];
+  // Danh sách xe: thêm xe mới vào đây là web tự nhận (xem hướng dẫn trong Code.gs
+  // để tạo tab tương ứng trong Google Sheet cho mỗi xe — "plate" phải khớp với CARS trong Code.gs)
+  const XE_LIST = [
+    { plate: '63A20430', label: '63A20430_ Hạng B', color: '#F97316' },
+    { plate: '63A20469', label: '63A20469_Hạng C1', color: '#DC2626' }
+  ];
+  let currentXe = XE_LIST[0].plate;
 
   const DAY_START_MIN = 6*60;   // 06:00
   const DAY_END_MIN   = 22*60;  // 22:00
   const SLOT_MIN = 15;
 
-  const xeSelect = document.getElementById('xeSelect');
-  function populateXeSelect(){
-    xeSelect.innerHTML = XE_LIST.map(x => `<option value="${x}">${x}</option>`).join('');
-    xeSelect.value = currentXe;
+  const xeDropdownBtn = document.getElementById('xeDropdownBtn');
+  const xeDropdownMenu = document.getElementById('xeDropdownMenu');
+
+  function renderXeDropdownMenu(){
+    xeDropdownMenu.innerHTML = XE_LIST.map(car => `
+      <button type="button" class="car-option${car.plate===currentXe?' active':''}" style="background:${car.color}" data-plate="${car.plate}">${escapeHtml(car.label)}</button>
+    `).join('');
   }
-  xeSelect.addEventListener('change', () => {
-    currentXe = xeSelect.value;
+  xeDropdownBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    xeDropdownMenu.classList.toggle('open');
+  });
+  xeDropdownMenu.addEventListener('click', (e) => {
+    const btn = e.target.closest('.car-option');
+    if(!btn) return;
+    currentXe = btn.dataset.plate;
+    renderXeDropdownMenu();
+    xeDropdownMenu.classList.remove('open');
     loadBookings();
   });
-  populateXeSelect();
+  document.addEventListener('click', (e) => {
+    if(!xeDropdownMenu.contains(e.target) && e.target !== xeDropdownBtn){
+      xeDropdownMenu.classList.remove('open');
+    }
+  });
+  renderXeDropdownMenu();
 
   const monthSelect = document.getElementById('monthSelect');
   const gridEl = document.getElementById('grid');
@@ -637,7 +681,8 @@
 
   function openModal(){
     overlay.classList.add('open');
-    document.getElementById('modalTitle').textContent = `Đăng ký đặt xe ${currentXe}`;
+    const car = XE_LIST.find(c => c.plate === currentXe);
+    document.getElementById('modalTitle').textContent = `Đăng ký đặt xe ${car ? car.label : currentXe}`;
     formMsg.className = 'msg';
     formMsg.style.display = 'none';
     form.reset();
