@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Đặt xe công ty</title>
+<title>Đặt xe STD hạng B</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
 <style>
@@ -158,6 +158,7 @@
     z-index:1;
     border-right:1px solid var(--border);
     text-align:right;
+    min-width:100px;
   }
   tbody tr:nth-child(4n+1) td, tbody tr:nth-child(4n+1) th{
     border-top:1.5px solid #9AA0AC;
@@ -223,7 +224,7 @@
     color:var(--ink-soft);
     margin-bottom:4px;
   }
-  .modal input, .modal textarea{
+  .modal input, .modal select, .modal textarea{
     width:100%;
     padding:9px 11px;
     border:1px solid var(--border);
@@ -231,8 +232,9 @@
     font-family:'Inter',sans-serif;
     font-size:0.92rem;
     color:var(--ink);
+    background:#fff;
   }
-  .modal input:focus, .modal textarea:focus{
+  .modal input:focus, .modal select:focus, .modal textarea:focus{
     outline:2px solid var(--badge);
     outline-offset:1px;
     border-color:var(--badge);
@@ -329,11 +331,11 @@
         <div class="row2">
           <div>
             <label for="gioBatDau">Giờ bắt đầu</label>
-            <input type="time" id="gioBatDau" required>
+            <select id="gioBatDau" required></select>
           </div>
           <div>
             <label for="gioKetThuc">Giờ kết thúc</label>
-            <input type="time" id="gioKetThuc" required>
+            <select id="gioKetThuc" required></select>
           </div>
         </div>
         <div>
@@ -354,8 +356,8 @@
   // Đổi biển số xe hiển thị ở đây nếu cần
   const BIEN_SO_XE = '63A20430';
 
-  const DAY_START_MIN = 5*60;   // 05:00
-  const DAY_END_MIN   = 23*60;  // 23:00
+  const DAY_START_MIN = 6*60;   // 06:00
+  const DAY_END_MIN   = 22*60;  // 22:00
   const SLOT_MIN = 15;
 
   document.getElementById('plateNumber').textContent = BIEN_SO_XE;
@@ -433,6 +435,9 @@
   function minToLabel(mins){
     return pad(Math.floor(mins/60)) + ':' + pad(mins%60);
   }
+  function minToDisplayLabel(mins){
+    return Math.floor(mins/60) + 'h' + pad(mins%60);
+  }
 
   function renderGrid(){
     const [y,m] = monthSelect.value.split('-').map(Number);
@@ -465,7 +470,7 @@
     html += '</tr></thead><tbody>';
 
     slots.forEach(mins => {
-      html += `<tr><th>${minToLabel(mins)}</th>`;
+      html += `<tr><th>${minToDisplayLabel(mins)} - ${minToDisplayLabel(mins+SLOT_MIN)}</th>`;
       visibleDays.forEach(d => {
         const dateStr = `${y}-${pad(m)}-${pad(d)}`;
         const bookings = byDate[dateStr] || [];
@@ -561,11 +566,34 @@
     return d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate());
   }
 
+  function populateTimeSelects(){
+    const startSel = document.getElementById('gioBatDau');
+    const endSel = document.getElementById('gioKetThuc');
+    let startOptions = '';
+    let endOptions = '';
+    for(let mins=DAY_START_MIN; mins<DAY_END_MIN; mins+=SLOT_MIN){
+      const value = minToLabel(mins);
+      const label = minToDisplayLabel(mins);
+      startOptions += `<option value="${value}">${label}</option>`;
+    }
+    for(let mins=DAY_START_MIN+SLOT_MIN; mins<=DAY_END_MIN; mins+=SLOT_MIN){
+      const value = minToLabel(mins);
+      const label = minToDisplayLabel(mins);
+      endOptions += `<option value="${value}">${label}</option>`;
+    }
+    startSel.innerHTML = startOptions;
+    endSel.innerHTML = endOptions;
+    // Mặc định chọn khung giờ đầu tiên / khung giờ 1 tiếng sau đó
+    startSel.selectedIndex = 0;
+    endSel.selectedIndex = Math.min(3, endSel.options.length - 1);
+  }
+
   function openModal(){
     overlay.classList.add('open');
     formMsg.className = 'msg';
     formMsg.style.display = 'none';
     form.reset();
+    populateTimeSelects();
     document.getElementById('ngay').value = todayISO();
     document.getElementById('ngay').min = todayISO();
   }
