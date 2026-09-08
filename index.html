@@ -166,19 +166,20 @@
   td.slot{cursor:default;}
   td.slot.booked{
     background:var(--booked-bg);
+    border-radius:6px;
+    vertical-align:middle;
+    text-align:center;
   }
-  td.slot.booked.first{ border-top-left-radius:5px; border-top-right-radius:5px; }
-  td.slot.booked.last{ border-bottom-left-radius:5px; border-bottom-right-radius:5px; }
   td.slot.booked .label{
     display:block;
     font-family:'Inter',sans-serif;
-    font-size:0.62rem;
+    font-size:0.95rem;
     font-weight:700;
     color:var(--booked-text);
-    overflow:hidden;
-    text-overflow:ellipsis;
-    white-space:nowrap;
-    padding:0 3px;
+    white-space:normal;
+    word-break:break-word;
+    line-height:1.25;
+    padding:2px 4px;
   }
   body.admin-mode td.slot.booked{
     cursor:pointer;
@@ -469,18 +470,40 @@
     });
     html += '</tr></thead><tbody>';
 
-    slots.forEach(mins => {
+    // Với mỗi ngày, xác định trước các khối đã đặt (để gộp ô bằng rowspan)
+    // colCells[day][slotIndex] = { type: 'empty' | 'skip' | 'bookedStart', span, booking }
+    const colCells = {};
+    visibleDays.forEach(d => {
+      const dateStr = `${y}-${pad(m)}-${pad(d)}`;
+      const bookings = byDate[dateStr] || [];
+      const cells = new Array(slots.length).fill(null).map(() => ({ type: 'empty' }));
+      bookings.forEach(b => {
+        const effStart = Math.max(b.startMin, DAY_START_MIN);
+        const effEnd = Math.min(b.endMin, DAY_END_MIN);
+        if (effEnd <= effStart) return;
+        const startIdx = Math.round((effStart - DAY_START_MIN) / SLOT_MIN);
+        const endIdx = Math.round((effEnd - DAY_START_MIN) / SLOT_MIN);
+        if (startIdx < 0 || startIdx >= cells.length) return;
+        cells[startIdx] = { type: 'bookedStart', span: endIdx - startIdx, booking: b };
+        for (let k = startIdx + 1; k < endIdx && k < cells.length; k++) {
+          cells[k] = { type: 'skip' };
+        }
+      });
+      colCells[d] = cells;
+    });
+
+    slots.forEach((mins, slotIdx) => {
       html += `<tr><th>${minToDisplayLabel(mins)} - ${minToDisplayLabel(mins+SLOT_MIN)}</th>`;
       visibleDays.forEach(d => {
         const dateStr = `${y}-${pad(m)}-${pad(d)}`;
-        const bookings = byDate[dateStr] || [];
-        const match = bookings.find(b => mins >= b.startMin && mins < b.endMin);
-        if(match){
-          const isFirst = mins === match.startMin || mins === DAY_START_MIN;
-          const isLast = (mins + SLOT_MIN) >= match.endMin || (mins+SLOT_MIN) === DAY_END_MIN;
-          const showLabel = mins === match.startMin || (mins === DAY_START_MIN && match.startMin < DAY_START_MIN);
-          const title = `${match.nguoiDat}: ${minToLabel(match.startMin)}–${minToLabel(match.endMin)}${match.ghiChu ? ' · ' + match.ghiChu : ''}`;
-          html += `<td class="slot booked${isFirst?' first':''}${isLast?' last':''}" data-id="${escapeAttr(match.id)}" data-name="${escapeAttr(match.nguoiDat)}" data-date="${dateStr}" data-start="${minToLabel(match.startMin)}" data-end="${minToLabel(match.endMin)}" title="${escapeAttr(title)}">${showLabel ? `<span class="label">${escapeHtml(match.nguoiDat)}</span>` : ''}</td>`;
+        const cell = colCells[d][slotIdx];
+        if (cell.type === 'skip') {
+          return; // ô này đã được gộp vào rowspan của dòng phía trên, không render lại
+        }
+        if (cell.type === 'bookedStart') {
+          const b = cell.booking;
+          const title = `${b.nguoiDat}: ${minToLabel(b.startMin)}–${minToLabel(b.endMin)}${b.ghiChu ? ' · ' + b.ghiChu : ''}`;
+          html += `<td class="slot booked" rowspan="${cell.span}" data-id="${escapeAttr(b.id)}" data-name="${escapeAttr(b.nguoiDat)}" data-date="${dateStr}" data-start="${minToLabel(b.startMin)}" data-end="${minToLabel(b.endMin)}" title="${escapeAttr(title)}"><span class="label">${escapeHtml(b.nguoiDat)}</span></td>`;
         } else {
           html += '<td class="slot"></td>';
         }
