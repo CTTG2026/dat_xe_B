@@ -847,6 +847,7 @@
       if(!json.ok){
         formMsg.textContent = json.error;
         formMsg.className = 'msg error';
+        formMsg.style.display = '';
       } else {
         closeModal();
         openSuccessDialog(payload);
@@ -855,6 +856,7 @@
     }catch(err){
       formMsg.textContent = 'Có lỗi khi gửi yêu cầu: ' + err.message;
       formMsg.className = 'msg error';
+      formMsg.style.display = '';
     }finally{
       submitBtn.disabled = false;
       submitBtn.textContent = 'Đặt xe';
