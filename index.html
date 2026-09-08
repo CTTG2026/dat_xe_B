@@ -5,342 +5,407 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Đặt xe công ty</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg:#FAFAF7;
+    --bg:#F5F6F8;
     --panel:#FFFFFF;
     --ink:#1A2233;
-    --ink-soft:#5B6472;
-    --accent:#2F5D8A;
-    --accent-dark:#234867;
-    --free:#3F7D58;
-    --free-bg:#EAF3EC;
-    --busy:#B04632;
-    --busy-bg:#FBEDE9;
-    --border:#E4E5E1;
-    --radius:10px;
+    --ink-soft:#6B7280;
+    --badge:#4C5FD5;
+    --badge-dark:#3B4BC0;
+    --add-btn:#2E9E5B;
+    --add-btn-dark:#25824A;
+    --border:#E3E5E9;
+    --grid-line:#EDEEF2;
+    --today-col:#FBFBFD;
+    --booked:#DCE3FA;
+    --booked-border:#4C5FD5;
+    --booked-text:#2B3B9E;
   }
   *{box-sizing:border-box;}
   body{
     margin:0;
     background:var(--bg);
     color:var(--ink);
-    font-family:'IBM Plex Sans',system-ui,sans-serif;
-    line-height:1.45;
+    font-family:'Inter',system-ui,sans-serif;
   }
-  .wrap{
-    max-width:640px;
-    margin:0 auto;
-    padding:28px 20px 60px;
-  }
-  header{
+  .topbar{
     display:flex;
-    align-items:baseline;
+    align-items:center;
     justify-content:space-between;
-    margin-bottom:22px;
-    border-bottom:2px solid var(--ink);
-    padding-bottom:14px;
+    gap:16px;
+    padding:14px 18px;
+    background:var(--panel);
+    border-bottom:1px solid var(--border);
+    flex-wrap:wrap;
   }
-  header h1{
-    font-size:1.5rem;
+  .plate{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    background:var(--badge);
+    color:#fff;
     font-weight:700;
-    margin:0;
-    letter-spacing:-0.01em;
-  }
-  header .date{
-    font-family:'IBM Plex Mono',monospace;
-    font-size:0.85rem;
-    color:var(--ink-soft);
-  }
-
-  section{margin-bottom:26px;}
-  h2{
     font-size:0.95rem;
-    font-weight:600;
-    text-transform:none;
-    margin:0 0 12px;
-    color:var(--ink);
+    padding:9px 16px;
+    border-radius:999px;
+    letter-spacing:0.01em;
+    white-space:nowrap;
   }
-
-  /* Timeline hôm nay */
-  .timeline-card{
-    background:var(--panel);
-    border:1px solid var(--border);
-    border-radius:var(--radius);
-    padding:16px 18px;
-  }
-  .timeline-track{
-    position:relative;
-    height:44px;
-    background:var(--free-bg);
-    border-radius:6px;
-    overflow:hidden;
-    margin-top:10px;
-  }
-  .timeline-block{
-    position:absolute;
-    top:0;
-    bottom:0;
-    background:var(--busy-bg);
-    border-left:2px solid var(--busy);
-    border-right:2px solid var(--busy);
-  }
-  .timeline-labels{
+  .plate svg{width:18px;height:18px;flex:none;}
+  .controls{
     display:flex;
-    justify-content:space-between;
-    font-family:'IBM Plex Mono',monospace;
-    font-size:0.72rem;
-    color:var(--ink-soft);
-    margin-top:6px;
+    align-items:center;
+    gap:10px;
+    flex-wrap:wrap;
   }
-  .timeline-empty{
+  .controls label{
     font-size:0.85rem;
+    font-weight:600;
     color:var(--ink-soft);
-    margin-top:10px;
   }
-
-  /* Form */
-  form{
-    background:var(--panel);
-    border:1px solid var(--border);
-    border-radius:var(--radius);
-    padding:20px;
-    display:grid;
-    gap:14px;
-  }
-  .row2{
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:14px;
-  }
-  label{
-    display:block;
-    font-size:0.8rem;
-    font-weight:500;
-    color:var(--ink-soft);
-    margin-bottom:5px;
-  }
-  input, textarea{
-    width:100%;
-    padding:10px 12px;
+  select{
+    padding:8px 10px;
     border:1px solid var(--border);
     border-radius:7px;
-    font-family:'IBM Plex Sans',sans-serif;
-    font-size:0.95rem;
-    color:var(--ink);
+    font-family:inherit;
+    font-size:0.88rem;
     background:#fff;
+    color:var(--ink);
   }
-  input:focus, textarea:focus{
-    outline:2px solid var(--accent);
-    outline-offset:1px;
-    border-color:var(--accent);
-  }
-  textarea{resize:vertical; min-height:56px;}
-
-  button{
-    background:var(--accent);
+  .btn-add{
+    background:var(--add-btn);
     color:#fff;
     border:none;
-    padding:12px 18px;
-    border-radius:7px;
-    font-size:0.95rem;
-    font-weight:600;
+    padding:10px 16px;
+    border-radius:8px;
+    font-size:0.88rem;
+    font-weight:700;
     cursor:pointer;
     font-family:inherit;
+    white-space:nowrap;
   }
-  button:hover{background:var(--accent-dark);}
-  button:disabled{background:#B7C2CC; cursor:not-allowed;}
+  .btn-add:hover{background:var(--add-btn-dark);}
 
-  .msg{
-    padding:11px 14px;
-    border-radius:7px;
-    font-size:0.88rem;
-    display:none;
-  }
-  .msg.error{ display:block; background:var(--busy-bg); color:var(--busy); }
-  .msg.success{ display:block; background:var(--free-bg); color:var(--free); }
-
-  /* Danh sách lịch sắp tới */
-  .booking-list{
+  /* Grid */
+  .grid-wrap{
+    margin:16px 18px 40px;
     background:var(--panel);
     border:1px solid var(--border);
-    border-radius:var(--radius);
-    overflow:hidden;
+    border-radius:10px;
+    overflow:auto;
+    max-height:78vh;
+    position:relative;
   }
-  .booking-item{
-    display:flex;
-    gap:14px;
-    padding:13px 18px;
-    border-bottom:1px solid var(--border);
-    align-items:baseline;
-  }
-  .booking-item:last-child{border-bottom:none;}
-  .booking-time{
+  table{
+    border-collapse:separate;
+    border-spacing:0;
     font-family:'IBM Plex Mono',monospace;
-    font-size:0.82rem;
-    color:var(--accent-dark);
-    white-space:nowrap;
-    min-width:118px;
+    font-size:0.72rem;
   }
-  .booking-info{font-size:0.9rem;}
-  .booking-info .name{font-weight:600;}
-  .booking-info .dest{color:var(--ink-soft);}
-  .empty-state{
-    padding:22px 18px;
+  th, td{
+    border-right:1px solid var(--grid-line);
+    border-bottom:1px solid var(--grid-line);
+    padding:0;
+    height:22px;
+    min-width:52px;
+    text-align:center;
+    white-space:nowrap;
+  }
+  thead th{
+    position:sticky;
+    top:0;
+    background:#F7F8FA;
     color:var(--ink-soft);
-    font-size:0.9rem;
+    font-weight:600;
+    padding:8px 4px;
+    z-index:2;
+    font-family:'Inter',sans-serif;
+    font-size:0.75rem;
+  }
+  thead th.corner{
+    left:0;
+    z-index:3;
+    background:#F7F8FA;
+  }
+  tbody th{
+    position:sticky;
+    left:0;
+    background:#FAFBFC;
+    color:var(--ink-soft);
+    font-weight:500;
+    padding:0 10px;
+    z-index:1;
+    border-right:1px solid var(--border);
+    text-align:right;
+  }
+  tbody tr:nth-child(4n+1) td, tbody tr:nth-child(4n+1) th{
+    border-top:1px solid var(--border);
+  }
+  td.slot{cursor:default;}
+  td.slot.booked{
+    background:var(--booked);
+    border-top:1px solid var(--booked-border);
+    border-bottom:1px solid var(--booked-border);
+  }
+  td.slot.booked.first{
+    border-top:2px solid var(--booked-border);
+  }
+  td.slot.booked.last{
+    border-bottom:2px solid var(--booked-border);
+  }
+  td.slot.booked .label{
+    display:block;
+    font-family:'Inter',sans-serif;
+    font-size:0.62rem;
+    font-weight:600;
+    color:var(--booked-text);
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+    padding:0 3px;
   }
 
-  footer{
-    text-align:center;
-    color:var(--ink-soft);
+  /* Modal */
+  .overlay{
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(20,24,34,0.45);
+    align-items:center;
+    justify-content:center;
+    z-index:50;
+    padding:16px;
+  }
+  .overlay.open{display:flex;}
+  .modal{
+    background:#fff;
+    border-radius:12px;
+    width:100%;
+    max-width:420px;
+    max-height:90vh;
+    overflow:auto;
+    padding:22px;
+  }
+  .modal h3{
+    margin:0 0 16px;
+    font-size:1.15rem;
+    font-weight:700;
+  }
+  .modal form{display:grid; gap:13px;}
+  .row2{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
+  .modal label{
+    display:block;
     font-size:0.78rem;
-    margin-top:30px;
+    font-weight:600;
+    color:var(--ink-soft);
+    margin-bottom:4px;
+  }
+  .modal input, .modal textarea{
+    width:100%;
+    padding:9px 11px;
+    border:1px solid var(--border);
+    border-radius:7px;
+    font-family:'Inter',sans-serif;
+    font-size:0.92rem;
+    color:var(--ink);
+  }
+  .modal input:focus, .modal textarea:focus{
+    outline:2px solid var(--badge);
+    outline-offset:1px;
+    border-color:var(--badge);
+  }
+  .modal textarea{resize:vertical; min-height:52px;}
+  .modal-actions{
+    display:flex;
+    gap:10px;
+    margin-top:4px;
+  }
+  .modal-actions button{
+    flex:1;
+    padding:11px;
+    border-radius:8px;
+    font-size:0.9rem;
+    font-weight:700;
+    font-family:inherit;
+    cursor:pointer;
+    border:none;
+  }
+  .btn-cancel{background:#EEF0F3; color:var(--ink);}
+  .btn-submit{background:var(--badge); color:#fff;}
+  .btn-submit:disabled{background:#B7BEDB; cursor:not-allowed;}
+  .msg{
+    padding:10px 12px;
+    border-radius:7px;
+    font-size:0.85rem;
+    display:none;
+  }
+  .msg.error{display:block; background:#FBEDE9; color:#B04632;}
+  .msg.success{display:block; background:#EAF3EC; color:#3F7D58;}
+
+  .legend{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    padding:0 18px;
+    margin-top:12px;
+    font-size:0.8rem;
+    color:var(--ink-soft);
+  }
+  .legend .swatch{
+    width:14px;height:14px;border-radius:3px;
+    background:var(--booked);
+    border:1px solid var(--booked-border);
+    display:inline-block;
   }
 </style>
 </head>
 <body>
-<div class="wrap">
 
-  <header>
-    <h1>Đặt xe công ty</h1>
-    <div class="date" id="todayLabel"></div>
-  </header>
-
-  <section>
-    <h2>Lịch xe hôm nay</h2>
-    <div class="timeline-card">
-      <div class="timeline-track" id="timelineTrack"></div>
-      <div class="timeline-labels"><span>06:00</span><span>12:00</span><span>18:00</span><span>22:00</span></div>
-      <div class="timeline-empty" id="timelineEmpty" style="display:none;">Xe trống cả ngày hôm nay.</div>
+  <div class="topbar">
+    <span class="plate">
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M5 11l1.5-4.5A2 2 0 0 1 8.4 5h7.2a2 2 0 0 1 1.9 1.5L19 11" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><rect x="3" y="11" width="18" height="6" rx="1.5" stroke="white" stroke-width="1.8"/><circle cx="7.5" cy="17" r="1.4" fill="white"/><circle cx="16.5" cy="17" r="1.4" fill="white"/></svg>
+      BIỂN SỐ XE: <span id="plateNumber">30A-123.45</span>
+    </span>
+    <div class="controls">
+      <label for="monthSelect">Chọn tháng:</label>
+      <select id="monthSelect"></select>
+      <button class="btn-add" id="openModalBtn">+ Đăng ký đặt xe</button>
     </div>
-  </section>
+  </div>
 
-  <section>
-    <h2>Đặt lịch mới</h2>
-    <form id="bookingForm">
+  <div class="legend"><span class="swatch"></span> Ô có màu = xe đã được đặt trong khung giờ đó</div>
+
+  <div class="grid-wrap">
+    <table id="grid"></table>
+  </div>
+
+  <div class="overlay" id="overlay">
+    <div class="modal">
+      <h3>Đăng ký đặt xe</h3>
       <div id="formMsg" class="msg"></div>
-      <div>
-        <label for="nguoiDat">Tên người đặt</label>
-        <input type="text" id="nguoiDat" required placeholder="VD: Nguyễn Văn A">
-      </div>
-      <div>
-        <label for="ngay">Ngày sử dụng</label>
-        <input type="date" id="ngay" required>
-      </div>
-      <div class="row2">
+      <form id="bookingForm">
         <div>
-          <label for="gioBatDau">Giờ bắt đầu</label>
-          <input type="time" id="gioBatDau" required>
+          <label for="nguoiDat">Tên người đặt</label>
+          <input type="text" id="nguoiDat" required placeholder="VD: Nguyễn Văn A">
         </div>
         <div>
-          <label for="gioKetThuc">Giờ kết thúc</label>
-          <input type="time" id="gioKetThuc" required>
+          <label for="ngay">Ngày sử dụng</label>
+          <input type="date" id="ngay" required>
         </div>
-      </div>
-      <div>
-        <label for="diemDen">Điểm đến</label>
-        <input type="text" id="diemDen" placeholder="VD: Sân bay Tân Sơn Nhất">
-      </div>
-      <div>
-        <label for="ghiChu">Ghi chú (không bắt buộc)</label>
-        <textarea id="ghiChu" placeholder="Thông tin thêm nếu có"></textarea>
-      </div>
-      <button type="submit" id="submitBtn">Đặt xe</button>
-    </form>
-  </section>
-
-  <section>
-    <h2>Lịch sắp tới</h2>
-    <div class="booking-list" id="bookingList">
-      <div class="empty-state">Đang tải lịch...</div>
+        <div class="row2">
+          <div>
+            <label for="gioBatDau">Giờ bắt đầu</label>
+            <input type="time" id="gioBatDau" required>
+          </div>
+          <div>
+            <label for="gioKetThuc">Giờ kết thúc</label>
+            <input type="time" id="gioKetThuc" required>
+          </div>
+        </div>
+        <div>
+          <label for="ghiChu">Ghi chú (không bắt buộc)</label>
+          <textarea id="ghiChu" placeholder="Thông tin thêm nếu có"></textarea>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn-cancel" id="cancelBtn">Hủy</button>
+          <button type="submit" class="btn-submit" id="submitBtn">Đặt xe</button>
+        </div>
+      </form>
     </div>
-  </section>
-
-  <footer>Vui lòng chỉ đặt xe khi thật sự cần và cập nhật nếu hủy chuyến.</footer>
-</div>
+  </div>
 
 <script>
   // ĐIỀN URL WEB APP APPS SCRIPT CỦA BẠN VÀO ĐÂY SAU KHI DEPLOY
   const API_URL = 'https://script.google.com/macros/s/AKfycbyLZaNu3I7RpVRU6oX5SpyOPsKWMsWcO5R-TnA9nknMkWSAYMnyaJbu4bASbkaOfzO7/exec';
+  // Đổi biển số xe hiển thị ở đây nếu cần
+  const BIEN_SO_XE = '30A-123.45';
 
-  const todayLabel = document.getElementById('todayLabel');
-  const bookingList = document.getElementById('bookingList');
-  const timelineTrack = document.getElementById('timelineTrack');
-  const timelineEmpty = document.getElementById('timelineEmpty');
-  const form = document.getElementById('bookingForm');
-  const formMsg = document.getElementById('formMsg');
-  const submitBtn = document.getElementById('submitBtn');
+  const DAY_START_MIN = 5*60;   // 05:00
+  const DAY_END_MIN   = 23*60;  // 23:00
+  const SLOT_MIN = 15;
 
-  function todayISO(){
-    const d = new Date();
-    return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
-  }
-  function formatDateVN(iso){
-    const [y,m,d] = iso.split('-');
-    return `${d}/${m}/${y}`;
-  }
+  document.getElementById('plateNumber').textContent = BIEN_SO_XE;
 
-  todayLabel.textContent = formatDateVN(todayISO());
-  document.getElementById('ngay').value = todayISO();
-  document.getElementById('ngay').min = todayISO();
+  const monthSelect = document.getElementById('monthSelect');
+  const gridEl = document.getElementById('grid');
+  let allBookings = [];
 
-  async function loadBookings(){
-    try{
-      const res = await fetch(API_URL);
-      const json = await res.json();
-      if(!json.ok){ throw new Error(json.error || 'Lỗi tải dữ liệu'); }
-      renderTimeline(json.data);
-      renderList(json.data);
-    }catch(err){
-      bookingList.innerHTML = `<div class="empty-state">Không tải được lịch. Kiểm tra lại đường dẫn API. (${err.message})</div>`;
+  function pad(n){ return String(n).padStart(2,'0'); }
+
+  function buildMonthOptions(){
+    const now = new Date();
+    const opts = [];
+    for(let offset=-1; offset<=5; offset++){
+      const d = new Date(now.getFullYear(), now.getMonth()+offset, 1);
+      opts.push({ y:d.getFullYear(), m:d.getMonth()+1 });
     }
+    monthSelect.innerHTML = opts.map(o =>
+      `<option value="${o.y}-${pad(o.m)}">Tháng ${pad(o.m)}/${o.y}</option>`
+    ).join('');
+    const cur = `${now.getFullYear()}-${pad(now.getMonth()+1)}`;
+    monthSelect.value = cur;
   }
 
-  function renderTimeline(data){
-    const today = todayISO();
-    const todays = data.filter(b => b.ngay === today);
-    timelineTrack.innerHTML = '';
-    if(todays.length === 0){
-      timelineEmpty.style.display = 'block';
-      return;
+  function daysInMonth(y,m){ return new Date(y, m, 0).getDate(); }
+
+  function buildTimeSlots(){
+    const slots = [];
+    for(let mins=DAY_START_MIN; mins<DAY_END_MIN; mins+=SLOT_MIN){
+      slots.push(mins);
     }
-    timelineEmpty.style.display = 'none';
-    const dayStart = 6*60, dayEnd = 22*60; // hiển thị khung 06:00–22:00
-    const span = dayEnd - dayStart;
-    todays.forEach(b => {
-      const [sh, sm] = b.gioBatDau.split(':').map(Number);
-      const [eh, em] = b.gioKetThuc.split(':').map(Number);
-      let startMin = sh*60+sm, endMin = eh*60+em;
-      startMin = Math.max(startMin, dayStart);
-      endMin = Math.min(endMin, dayEnd);
-      if(endMin <= startMin) return;
-      const leftPct = ((startMin - dayStart) / span) * 100;
-      const widthPct = ((endMin - startMin) / span) * 100;
-      const block = document.createElement('div');
-      block.className = 'timeline-block';
-      block.style.left = leftPct + '%';
-      block.style.width = widthPct + '%';
-      block.title = `${b.nguoiDat}: ${b.gioBatDau}–${b.gioKetThuc}`;
-      timelineTrack.appendChild(block);
+    return slots;
+  }
+  function minToLabel(mins){
+    return pad(Math.floor(mins/60)) + ':' + pad(mins%60);
+  }
+
+  function renderGrid(){
+    const [y,m] = monthSelect.value.split('-').map(Number);
+    const nDays = daysInMonth(y,m);
+    const slots = buildTimeSlots();
+
+    // map: "YYYY-MM-DD" -> array of {startMin, endMin, nguoiDat, diemDen}
+    const byDate = {};
+    allBookings.forEach(b => {
+      if(!byDate[b.ngay]) byDate[b.ngay] = [];
+      const [sh,sm] = b.gioBatDau.split(':').map(Number);
+      const [eh,em] = b.gioKetThuc.split(':').map(Number);
+      byDate[b.ngay].push({
+        startMin: sh*60+sm,
+        endMin: eh*60+em,
+        nguoiDat: b.nguoiDat,
+        ghiChu: b.ghiChu
+      });
     });
-  }
 
-  function renderList(data){
-    if(data.length === 0){
-      bookingList.innerHTML = '<div class="empty-state">Chưa có lịch đặt xe nào sắp tới.</div>';
-      return;
+    let html = '<thead><tr><th class="corner">Giờ \\ Ngày</th>';
+    for(let d=1; d<=nDays; d++){
+      html += `<th>${d}/${pad(m)}</th>`;
     }
-    bookingList.innerHTML = data.map(b => `
-      <div class="booking-item">
-        <div class="booking-time">${formatDateVN(b.ngay)}<br>${b.gioBatDau}–${b.gioKetThuc}</div>
-        <div class="booking-info">
-          <div class="name">${escapeHtml(b.nguoiDat)}</div>
-          <div class="dest">${escapeHtml(b.diemDen || 'Không ghi điểm đến')}${b.ghiChu ? ' · ' + escapeHtml(b.ghiChu) : ''}</div>
-        </div>
-      </div>
-    `).join('');
+    html += '</tr></thead><tbody>';
+
+    slots.forEach(mins => {
+      html += `<tr><th>${minToLabel(mins)}</th>`;
+      for(let d=1; d<=nDays; d++){
+        const dateStr = `${y}-${pad(m)}-${pad(d)}`;
+        const bookings = byDate[dateStr] || [];
+        const match = bookings.find(b => mins >= b.startMin && mins < b.endMin);
+        if(match){
+          const isFirst = mins === match.startMin || mins === DAY_START_MIN;
+          const isLast = (mins + SLOT_MIN) >= match.endMin || (mins+SLOT_MIN) === DAY_END_MIN;
+          const showLabel = mins === match.startMin || (mins === DAY_START_MIN && match.startMin < DAY_START_MIN);
+          const title = `${match.nguoiDat}: ${minToLabel(match.startMin)}–${minToLabel(match.endMin)}${match.ghiChu ? ' · ' + match.ghiChu : ''}`;
+          html += `<td class="slot booked${isFirst?' first':''}${isLast?' last':''}" title="${escapeAttr(title)}">${showLabel ? `<span class="label">${escapeHtml(match.nguoiDat)}</span>` : ''}</td>`;
+        } else {
+          html += '<td class="slot"></td>';
+        }
+      }
+      html += '</tr>';
+    });
+    html += '</tbody>';
+    gridEl.innerHTML = html;
   }
 
   function escapeHtml(str){
@@ -348,6 +413,50 @@
     div.textContent = str;
     return div.innerHTML;
   }
+  function escapeAttr(str){
+    return String(str).replace(/"/g,'&quot;');
+  }
+
+  async function loadBookings(){
+    try{
+      const res = await fetch(API_URL);
+      const json = await res.json();
+      if(!json.ok) throw new Error(json.error || 'Lỗi tải dữ liệu');
+      allBookings = json.data;
+      renderGrid();
+    }catch(err){
+      gridEl.innerHTML = `<tbody><tr><td style="padding:20px;font-family:Inter,sans-serif;color:#B04632;">Không tải được lịch. Kiểm tra lại đường dẫn API. (${err.message})</td></tr></tbody>`;
+    }
+  }
+
+  monthSelect.addEventListener('change', renderGrid);
+
+  // Modal
+  const overlay = document.getElementById('overlay');
+  const openModalBtn = document.getElementById('openModalBtn');
+  const cancelBtn = document.getElementById('cancelBtn');
+  const form = document.getElementById('bookingForm');
+  const formMsg = document.getElementById('formMsg');
+  const submitBtn = document.getElementById('submitBtn');
+
+  function todayISO(){
+    const d = new Date();
+    return d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate());
+  }
+
+  function openModal(){
+    overlay.classList.add('open');
+    formMsg.className = 'msg';
+    formMsg.style.display = 'none';
+    form.reset();
+    document.getElementById('ngay').value = todayISO();
+    document.getElementById('ngay').min = todayISO();
+  }
+  function closeModal(){ overlay.classList.remove('open'); }
+
+  openModalBtn.addEventListener('click', openModal);
+  cancelBtn.addEventListener('click', closeModal);
+  overlay.addEventListener('click', (e) => { if(e.target === overlay) closeModal(); });
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -361,14 +470,13 @@
       ngay: document.getElementById('ngay').value,
       gioBatDau: document.getElementById('gioBatDau').value,
       gioKetThuc: document.getElementById('gioKetThuc').value,
-      diemDen: document.getElementById('diemDen').value.trim(),
       ghiChu: document.getElementById('ghiChu').value.trim()
     };
 
     try{
       const res = await fetch(API_URL, {
         method: 'POST',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // tránh preflight CORS
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
         body: JSON.stringify(payload)
       });
       const json = await res.json();
@@ -378,10 +486,8 @@
       } else {
         formMsg.textContent = 'Đặt xe thành công!';
         formMsg.className = 'msg success';
-        form.reset();
-        document.getElementById('ngay').value = todayISO();
-        document.getElementById('ngay').min = todayISO();
-        loadBookings();
+        await loadBookings();
+        setTimeout(closeModal, 900);
       }
     }catch(err){
       formMsg.textContent = 'Có lỗi khi gửi yêu cầu: ' + err.message;
@@ -392,6 +498,8 @@
     }
   });
 
+  buildMonthOptions();
+  renderGrid();
   loadBookings();
 </script>
 </body>
