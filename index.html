@@ -18,10 +18,11 @@
     --add-btn-dark:#25824A;
     --border:#E3E5E9;
     --grid-line:#EDEEF2;
-    --today-col:#FBFBFD;
-    --booked:#DCE3FA;
-    --booked-border:#4C5FD5;
-    --booked-text:#2B3B9E;
+    --booked-bg:#FDE68A;
+    --booked-bg-hover:#FCD34D;
+    --booked-text:#8A5A00;
+    --admin-btn:#6B7280;
+    --admin-btn-on:#B04632;
   }
   *{box-sizing:border-box;}
   body{
@@ -40,6 +41,12 @@
     border-bottom:1px solid var(--border);
     flex-wrap:wrap;
   }
+  .left-group, .right-group{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    flex-wrap:wrap;
+  }
   .plate{
     display:inline-flex;
     align-items:center;
@@ -54,12 +61,6 @@
     white-space:nowrap;
   }
   .plate svg{width:18px;height:18px;flex:none;}
-  .controls{
-    display:flex;
-    align-items:center;
-    gap:10px;
-    flex-wrap:wrap;
-  }
   .controls label{
     font-size:0.85rem;
     font-weight:600;
@@ -87,6 +88,24 @@
     white-space:nowrap;
   }
   .btn-add:hover{background:var(--add-btn-dark);}
+
+  .btn-admin{
+    background:#fff;
+    color:var(--admin-btn);
+    border:1px solid var(--border);
+    padding:9px 14px;
+    border-radius:8px;
+    font-size:0.82rem;
+    font-weight:600;
+    cursor:pointer;
+    font-family:inherit;
+    white-space:nowrap;
+  }
+  .btn-admin.on{
+    background:#FBEDE9;
+    color:var(--admin-btn-on);
+    border-color:var(--admin-btn-on);
+  }
 
   /* Grid */
   .grid-wrap{
@@ -145,26 +164,28 @@
   }
   td.slot{cursor:default;}
   td.slot.booked{
-    background:var(--booked);
-    border-top:1px solid var(--booked-border);
-    border-bottom:1px solid var(--booked-border);
+    background:var(--booked-bg);
   }
-  td.slot.booked.first{
-    border-top:2px solid var(--booked-border);
-  }
-  td.slot.booked.last{
-    border-bottom:2px solid var(--booked-border);
-  }
+  td.slot.booked.first{ border-top-left-radius:5px; border-top-right-radius:5px; }
+  td.slot.booked.last{ border-bottom-left-radius:5px; border-bottom-right-radius:5px; }
   td.slot.booked .label{
     display:block;
     font-family:'Inter',sans-serif;
     font-size:0.62rem;
-    font-weight:600;
+    font-weight:700;
     color:var(--booked-text);
     overflow:hidden;
     text-overflow:ellipsis;
     white-space:nowrap;
     padding:0 3px;
+  }
+  body.admin-mode td.slot.booked{
+    cursor:pointer;
+  }
+  body.admin-mode td.slot.booked:hover{
+    background:var(--booked-bg-hover);
+    outline:1px solid var(--admin-btn-on);
+    outline-offset:-1px;
   }
 
   /* Modal */
@@ -255,27 +276,38 @@
   }
   .legend .swatch{
     width:14px;height:14px;border-radius:3px;
-    background:var(--booked);
-    border:1px solid var(--booked-border);
+    background:var(--booked-bg);
     display:inline-block;
   }
+  .legend .admin-hint{
+    display:none;
+    color:var(--admin-btn-on);
+    font-weight:600;
+  }
+  body.admin-mode .legend .admin-hint{ display:inline; }
 </style>
 </head>
 <body>
 
   <div class="topbar">
-    <span class="plate">
-      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M5 11l1.5-4.5A2 2 0 0 1 8.4 5h7.2a2 2 0 0 1 1.9 1.5L19 11" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><rect x="3" y="11" width="18" height="6" rx="1.5" stroke="white" stroke-width="1.8"/><circle cx="7.5" cy="17" r="1.4" fill="white"/><circle cx="16.5" cy="17" r="1.4" fill="white"/></svg>
-      BIỂN SỐ XE: <span id="plateNumber">30A-123.45</span>
-    </span>
-    <div class="controls">
+    <div class="left-group">
+      <span class="plate">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M5 11l1.5-4.5A2 2 0 0 1 8.4 5h7.2a2 2 0 0 1 1.9 1.5L19 11" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><rect x="3" y="11" width="18" height="6" rx="1.5" stroke="white" stroke-width="1.8"/><circle cx="7.5" cy="17" r="1.4" fill="white"/><circle cx="16.5" cy="17" r="1.4" fill="white"/></svg>
+        BIỂN SỐ XE: <span id="plateNumber">63A20430</span>
+      </span>
+      <button class="btn-add" id="openModalBtn">+ Đăng ký đặt xe</button>
+    </div>
+    <div class="right-group">
       <label for="monthSelect">Chọn tháng:</label>
       <select id="monthSelect"></select>
-      <button class="btn-add" id="openModalBtn">+ Đăng ký đặt xe</button>
+      <button class="btn-admin" id="adminToggleBtn">🔒 Chế độ Admin</button>
     </div>
   </div>
 
-  <div class="legend"><span class="swatch"></span> Ô có màu = xe đã được đặt trong khung giờ đó</div>
+  <div class="legend">
+    <span class="swatch"></span> Ô màu vàng = xe đã được đặt trong khung giờ đó
+    <span class="admin-hint">&nbsp;· Đang ở chế độ Admin — bấm vào ô đã đặt để xóa</span>
+  </div>
 
   <div class="grid-wrap">
     <table id="grid"></table>
@@ -320,7 +352,7 @@
   // ĐIỀN URL WEB APP APPS SCRIPT CỦA BẠN VÀO ĐÂY SAU KHI DEPLOY
   const API_URL = 'https://script.google.com/macros/s/AKfycbyLZaNu3I7RpVRU6oX5SpyOPsKWMsWcO5R-TnA9nknMkWSAYMnyaJbu4bASbkaOfzO7/exec';
   // Đổi biển số xe hiển thị ở đây nếu cần
-  const BIEN_SO_XE = '30A-123.45';
+  const BIEN_SO_XE = '63A20430';
 
   const DAY_START_MIN = 5*60;   // 05:00
   const DAY_END_MIN   = 23*60;  // 23:00
@@ -331,6 +363,29 @@
   const monthSelect = document.getElementById('monthSelect');
   const gridEl = document.getElementById('grid');
   let allBookings = [];
+
+  // --- Admin mode ---
+  let adminMode = false;
+  let adminPassword = '';
+  const adminToggleBtn = document.getElementById('adminToggleBtn');
+
+  adminToggleBtn.addEventListener('click', () => {
+    if (adminMode) {
+      adminMode = false;
+      adminPassword = '';
+      document.body.classList.remove('admin-mode');
+      adminToggleBtn.textContent = '🔒 Chế độ Admin';
+      adminToggleBtn.classList.remove('on');
+    } else {
+      const pw = window.prompt('Nhập mật khẩu quản trị để bật chế độ xóa lịch:');
+      if (pw === null || pw.trim() === '') return;
+      adminPassword = pw.trim();
+      adminMode = true;
+      document.body.classList.add('admin-mode');
+      adminToggleBtn.textContent = '🔓 Đang ở chế độ Admin';
+      adminToggleBtn.classList.add('on');
+    }
+  });
 
   function pad(n){ return String(n).padStart(2,'0'); }
 
@@ -350,6 +405,24 @@
 
   function daysInMonth(y,m){ return new Date(y, m, 0).getDate(); }
 
+  // Chỉ hiện các ngày từ (hôm nay - 3 ngày) trở đi; ngày cũ hơn sẽ bị ẩn khỏi lưới
+  function getCutoffDate(){
+    const now = new Date();
+    return new Date(now.getFullYear(), now.getMonth(), now.getDate() - 3);
+  }
+  function getVisibleDays(y, m){
+    const nDays = daysInMonth(y, m);
+    const cutoff = getCutoffDate();
+    const visible = [];
+    for(let d=1; d<=nDays; d++){
+      const dateObj = new Date(y, m-1, d);
+      if(dateObj.getTime() >= cutoff.getTime()){
+        visible.push(d);
+      }
+    }
+    return visible;
+  }
+
   function buildTimeSlots(){
     const slots = [];
     for(let mins=DAY_START_MIN; mins<DAY_END_MIN; mins+=SLOT_MIN){
@@ -363,16 +436,16 @@
 
   function renderGrid(){
     const [y,m] = monthSelect.value.split('-').map(Number);
-    const nDays = daysInMonth(y,m);
+    const visibleDays = getVisibleDays(y, m);
     const slots = buildTimeSlots();
 
-    // map: "YYYY-MM-DD" -> array of {startMin, endMin, nguoiDat, diemDen}
     const byDate = {};
     allBookings.forEach(b => {
       if(!byDate[b.ngay]) byDate[b.ngay] = [];
       const [sh,sm] = b.gioBatDau.split(':').map(Number);
       const [eh,em] = b.gioKetThuc.split(':').map(Number);
       byDate[b.ngay].push({
+        id: b.id,
         startMin: sh*60+sm,
         endMin: eh*60+em,
         nguoiDat: b.nguoiDat,
@@ -380,15 +453,20 @@
       });
     });
 
-    let html = '<thead><tr><th class="corner">Giờ \\ Ngày</th>';
-    for(let d=1; d<=nDays; d++){
-      html += `<th>${d}/${pad(m)}</th>`;
+    if(visibleDays.length === 0){
+      gridEl.innerHTML = '<tbody><tr><td style="padding:20px;font-family:Inter,sans-serif;color:#6B7280;">Tháng này không còn ngày nào để hiển thị.</td></tr></tbody>';
+      return;
     }
+
+    let html = '<thead><tr><th class="corner">Giờ \\ Ngày</th>';
+    visibleDays.forEach(d => {
+      html += `<th>${d}/${pad(m)}</th>`;
+    });
     html += '</tr></thead><tbody>';
 
     slots.forEach(mins => {
       html += `<tr><th>${minToLabel(mins)}</th>`;
-      for(let d=1; d<=nDays; d++){
+      visibleDays.forEach(d => {
         const dateStr = `${y}-${pad(m)}-${pad(d)}`;
         const bookings = byDate[dateStr] || [];
         const match = bookings.find(b => mins >= b.startMin && mins < b.endMin);
@@ -397,11 +475,11 @@
           const isLast = (mins + SLOT_MIN) >= match.endMin || (mins+SLOT_MIN) === DAY_END_MIN;
           const showLabel = mins === match.startMin || (mins === DAY_START_MIN && match.startMin < DAY_START_MIN);
           const title = `${match.nguoiDat}: ${minToLabel(match.startMin)}–${minToLabel(match.endMin)}${match.ghiChu ? ' · ' + match.ghiChu : ''}`;
-          html += `<td class="slot booked${isFirst?' first':''}${isLast?' last':''}" title="${escapeAttr(title)}">${showLabel ? `<span class="label">${escapeHtml(match.nguoiDat)}</span>` : ''}</td>`;
+          html += `<td class="slot booked${isFirst?' first':''}${isLast?' last':''}" data-id="${escapeAttr(match.id)}" data-name="${escapeAttr(match.nguoiDat)}" data-date="${dateStr}" data-start="${minToLabel(match.startMin)}" data-end="${minToLabel(match.endMin)}" title="${escapeAttr(title)}">${showLabel ? `<span class="label">${escapeHtml(match.nguoiDat)}</span>` : ''}</td>`;
         } else {
           html += '<td class="slot"></td>';
         }
-      }
+      });
       html += '</tr>';
     });
     html += '</tbody>';
@@ -431,7 +509,46 @@
 
   monthSelect.addEventListener('change', renderGrid);
 
-  // Modal
+  // Xóa lịch (chỉ hoạt động khi bật chế độ Admin)
+  gridEl.addEventListener('click', async (e) => {
+    if(!adminMode) return;
+    const cell = e.target.closest('td.slot.booked');
+    if(!cell) return;
+
+    const name = cell.dataset.name;
+    const date = cell.dataset.date;
+    const start = cell.dataset.start;
+    const end = cell.dataset.end;
+    const id = cell.dataset.id;
+
+    const confirmed = window.confirm(`Xóa lịch của "${name}" ngày ${date}, ${start}–${end}?`);
+    if(!confirmed) return;
+
+    try{
+      const res = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ action: 'delete', id: id, password: adminPassword })
+      });
+      const json = await res.json();
+      if(!json.ok){
+        alert('Không xóa được: ' + json.error);
+        if(String(json.error).includes('Sai mật khẩu')){
+          adminMode = false;
+          adminPassword = '';
+          document.body.classList.remove('admin-mode');
+          adminToggleBtn.textContent = '🔒 Chế độ Admin';
+          adminToggleBtn.classList.remove('on');
+        }
+      } else {
+        await loadBookings();
+      }
+    }catch(err){
+      alert('Có lỗi khi xóa: ' + err.message);
+    }
+  });
+
+  // Modal đặt xe
   const overlay = document.getElementById('overlay');
   const openModalBtn = document.getElementById('openModalBtn');
   const cancelBtn = document.getElementById('cancelBtn');
