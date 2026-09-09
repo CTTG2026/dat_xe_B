@@ -227,7 +227,7 @@
     cursor:pointer;
   }
   body.admin-mode td.slot.booked:hover{
-    background:var(--booked-bg-hover);
+    filter:brightness(0.9);
     outline:1px solid var(--admin-btn-on);
     outline-offset:-1px;
   }
@@ -405,7 +405,7 @@
   </div>
 
   <div class="legend">
-    <span class="swatch"></span> Ô màu vàng = xe đã được đặt trong khung giờ đó
+    <span class="swatch"></span> Ô đã tô màu = khung giờ đã được đặt
     <span class="admin-hint">&nbsp;· Đang ở chế độ Admin — bấm vào ô đã đặt để xóa</span>
   </div>
 
@@ -655,7 +655,24 @@
         if (cell.type === 'bookedStart') {
           const b = cell.booking;
           const title = `${b.nguoiDat}: ${minToLabel(b.startMin)}–${minToLabel(b.endMin)}${b.ghiChu ? ' · ' + b.ghiChu : ''}`;
-          html += `<td class="slot booked" rowspan="${cell.span}" data-id="${escapeAttr(b.id)}" data-name="${escapeAttr(b.nguoiDat)}" data-date="${dateStr}" data-start="${minToLabel(b.startMin)}" data-end="${minToLabel(b.endMin)}" title="${escapeAttr(title)}"><span class="label">${escapeHtml(b.nguoiDat)}</span></td>`;
+          const today = todayISO();
+          let nameHtml, cellStyle;
+          if (dateStr < today) {
+            // Ngày quá khứ: chữ thường, màu xám đậm
+            nameHtml = escapeHtml(b.nguoiDat);
+            cellStyle = `background:#E2E4E8; color:#4B5563;`;
+          } else {
+            const color = nameToColor(b.nguoiDat);
+            cellStyle = `background:${color.bg}; color:${color.text};`;
+            if (dateStr === today) {
+              // Hôm nay: chữ in hoa
+              nameHtml = escapeHtml(b.nguoiDat).toUpperCase();
+            } else {
+              // Ngày tương lai: chữ thường
+              nameHtml = escapeHtml(b.nguoiDat);
+            }
+          }
+          html += `<td class="slot booked" style="${cellStyle}" rowspan="${cell.span}" data-id="${escapeAttr(b.id)}" data-name="${escapeAttr(b.nguoiDat)}" data-date="${dateStr}" data-start="${minToLabel(b.startMin)}" data-end="${minToLabel(b.endMin)}" title="${escapeAttr(title)}"><span class="label">${nameHtml}</span></td>`;
         } else {
           html += '<td class="slot"></td>';
         }
@@ -673,6 +690,19 @@
   }
   function escapeAttr(str){
     return String(str).replace(/"/g,'&quot;');
+  }
+
+  // Sinh 1 màu cố định riêng cho mỗi người đặt, dựa trên tên (cùng tên luôn ra cùng màu)
+  function nameToColor(name){
+    let hash = 0;
+    for(let i=0; i<name.length; i++){
+      hash = name.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const hue = Math.abs(hash) % 360;
+    return {
+      bg: `hsl(${hue}, 70%, 85%)`,
+      text: `hsl(${hue}, 65%, 28%)`
+    };
   }
 
   async function loadBookings(){
