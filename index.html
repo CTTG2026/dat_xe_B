@@ -385,6 +385,16 @@
 </head>
 <body>
 
+  <div class="overlay open" id="selectXeOverlay">
+    <div class="modal" style="text-align:center;">
+      <h3>Vui lòng chọn xe</h3>
+      <select id="initialXeSelect" style="width:100%; padding:10px 11px; border:1px solid var(--border); border-radius:7px; font-size:0.95rem; margin:14px 0; font-family:inherit;"></select>
+      <button type="button" class="btn-add" id="initialXeConfirmBtn" style="width:100%;">Chọn</button>
+    </div>
+  </div>
+
+  <div id="appContent" style="display:none;">
+
   <div class="topbar">
     <div class="left-group">
       <img src="logo.jpg" alt="Logo" class="site-logo">
@@ -411,6 +421,8 @@
 
   <div class="grid-wrap">
     <table id="grid"></table>
+  </div>
+
   </div>
 
   <div class="overlay" id="overlay">
@@ -894,8 +906,20 @@
   });
 
   buildMonthOptions();
-  renderGrid();
-  loadBookings();
+
+  /* ---------- Màn hình chọn xe ban đầu ---------- */
+  const initialXeSelect = document.getElementById('initialXeSelect');
+  initialXeSelect.innerHTML = XE_LIST.map(car => `<option value="${car.plate}">${escapeHtml(car.label)}</option>`).join('');
+
+  document.getElementById('initialXeConfirmBtn').addEventListener('click', () => {
+    currentXe = initialXeSelect.value;
+    document.getElementById('selectXeOverlay').classList.remove('open');
+    document.getElementById('appContent').style.display = '';
+    updateXeButton();
+    renderXeDropdownMenu();
+    renderGrid();
+    loadBookings();
+  });
 </script>
 </body>
 </html>
